@@ -28,7 +28,7 @@ function getInfo (isbn) {
                     getInfo(conv13to10(isbn));//检查isbn10
                 }
                 else {
-                     alert(isbn.length);
+                     //alert(isbn.length);
                      $('#szulib').append("没有找到！");
                 }
             }
