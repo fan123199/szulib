@@ -1,31 +1,43 @@
+function conv13to10(str) {
+    //将isbn13转化为isbn10
+    var s;
+    var c;
+    var checkDigit = 0;
+    var result = "";
 
-//未处理在图书馆登录后的情况
-//添加与豆瓣风格一样的div
-$('#buyinfo').before('<div class="gray_ad" id="szulib"></div>');
-//首先快速载入问题（无需连接到图书馆）
-$('#szulib').append('<h2>深大图书馆有没有?</h2><div class="bs" id="isex"></div>');
-//获取isbn，text()获取html的文本， split分割
-var isbn = $('#info').text().split('ISBN: ')[1];
-//得出搜索图书的链接
-var preurl = 'http://opac.lib.szu.edu.cn/opac/searchresult.aspx?isbn_f=' + isbn;
-//第一次ajax，搜索图书 
-$.ajax({
-    url: preurl,
-    type: 'GET',
-    //错误信息
-    error: function () {
-        $('#isex').html('访问图书馆失败!');
-    },
+    s = str.substring(3,str.length);
+    for ( i = 10; i > 1; i-- ) {
+        c = s.charAt(10 - i);
+        checkDigit += (c - 0) * i;
+        result += c;
+    }
+    checkDigit = (11 - (checkDigit % 11)) % 11;
+    result += checkDigit == 10 ? 'X' : (checkDigit + "");
 
-    success: function (msg) {
-        if (msg.indexOf('searchnotfound') != -1) { //之前使用'本馆没有您要检索的馆藏书目'
-            $('#isex').html('没有！');
-        } else {
-            $('#isex').html('有！');
-            $('#isex').after('<br><h2>在这里</h2>');
-            var findurl = msg.replace(/( |　|\r\n|\n)/ig, '').split('<spanclass="title"><ahref="')[1].split('"target="_blank"')[0];
-            //二次ajax,进入图书详情页
-            $.ajax({
+    return ( result );
+}
+
+function getInfo (isbn) {
+    var preurl = 'http://opac.lib.szu.edu.cn/opac/searchresult.aspx?isbn_f=' + isbn;
+
+    var jqxhr = $.ajax(preurl)
+        .done(function(msg) {
+            if (msg.indexOf('searchnotfound') != -1) {
+                if(isbn.length == 13) {
+                    //alert(isbn.length);
+                    getInfo(conv13to10(isbn));//检查isbn10
+                }
+                else {
+                     alert(isbn.length);
+                     $('#szulib').append("没有找到！");
+                }
+            }
+            else {
+                //取得信息后准备第二次连接
+                $('#isex').html('有！');
+                $('#isex').after('<br><h2>在这里</h2>');
+                var findurl = msg.replace(/( |　|\r\n|\n)/ig, '').split('<spanclass="title"><ahref="')[1].split('"target="_blank"')[0];
+                $.ajax({
                 url: "http://opac.lib.szu.edu.cn/opac/" + findurl,
                 type: 'GET',
                 error: function () {
@@ -53,5 +65,21 @@ $.ajax({
                 }
             });
         }
-    }
-});
+        })
+        .fail(function() {
+            $('#szulib').append("连接图书馆出错！");
+        });
+}
+
+function init () {
+    //未处理在图书馆登录后的情况
+    //添加与豆瓣风格一样的div
+    $('#buyinfo').before('<div class="gray_ad" id="szulib"></div>');
+    //首先快速载入问题（无需连接到图书馆）
+    $('#szulib').append('<h2>深大图书馆有没有?</h2><div class="bs" id="isex"></div>');
+    //获取isbn，text()获取html的文本， split分割
+    var isbn = $('#info').text().split('ISBN: ')[1].trim();
+    getInfo(isbn);
+}
+
+init();
