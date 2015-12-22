@@ -1,5 +1,5 @@
+//将isbn13转化为isbn10
 function conv13to10(str) {
-    //将isbn13转化为isbn10
     var s;
     var c;
     var checkDigit = 0;
@@ -17,58 +17,62 @@ function conv13to10(str) {
     return ( result );
 }
 
+//获取图书信息
 function getInfo (isbn) {
     var preurl = 'http://opac.lib.szu.edu.cn/opac/searchresult.aspx?isbn_f=' + isbn;
 
     var jqxhr = $.ajax(preurl)
-        .done(function(msg) {
-            if (msg.indexOf('searchnotfound') != -1) {
-                if(isbn.length == 13) {
-                    //alert(isbn.length);
-                    getInfo(conv13to10(isbn));//检查isbn10
-                }
-                else {
-                     //alert(isbn.length);
-                     $('#szulib').append("没有找到！");
-                }
-            }
-            else {
-                //取得信息后准备第二次连接
-                $('#isex').html('有！');
-                $('#isex').after('<br><h2>在这里</h2>');
-                var findurl = msg.replace(/( |　|\r\n|\n)/ig, '').split('<spanclass="title"><ahref="')[1].split('"target="_blank"')[0];
-                $.ajax({
-                url: "http://opac.lib.szu.edu.cn/opac/" + findurl,
-                type: 'GET',
-                error: function () {
-                    $('#szulib').append('获取信息失败!');
-                },
-                success: function (detail) {
-                    var detail_table = detail.split('<h5 class="tbc">藏书情况</h5>')[1].split('<input')[0];
+		.done(function(msg) {
+	        if (msg.indexOf('searchnotfound') != -1) {
+	            if(isbn.length == 13) {
+	            	getInfo(conv13to10(isbn));//检查isbn10
+	            }
+	            else {
+	            	$('#szulib').append("没有找到！");
+	            }                   
+	        }
+	        else {
+	            //取得信息后准备第二次连接
+	            $('#isex').html('有！');
+	            $('#isex').after('<br><h2>在这里</h2>');
+	            var findurl = msg.replace(/( |　|\r\n|\n)/ig, '')
+	            	.split('<spanclass="title"><ahref="')[1].split('"target="_blank"')[0];
+	            var info_url = "http://opac.lib.szu.edu.cn/opac/" + findurl;
+	            showinfo(info_url);
+	           
+			}
+		})
+		.fail(function() {
+	        $('#szulib').append("连接图书馆出错！");
+	    });
+}
+function showinfo(url){
+	 $.ajax({
+		url:url,
+		type: 'GET'})
+		.done(function (detail) {
+	        var detail_table = detail.split('<h5 class="tbc">藏书情况</h5>')[1].split('<input')[0];
+	        $('#szulib').append(detail_table + '<br><h2 class="bs" id="mdt"><a href="' 
+	        	+ url + '" target="_blank">点击查看详细</a></h2>');
 
-                    $('#szulib').append(detail_table + '<br><h2 class="bs" id="mdt"><a href="' + "http://opac.lib.szu.edu.cn/opac/" + findurl + '" target="_blank">点击查看详细</a></h2>');
 
-                    $('.tbhead tr td:eq(2)').hide();
-                    $('.tbhead tr td:eq(3)').hide();
-                    $('.tbhead tr td:eq(4)').hide();
-                    $('.tbhead tr td:eq(6)').hide();
+	        $('.tbhead tr td:eq(2)').hide();
+	        $('.tbhead tr td:eq(3)').hide();
+	        $('.tbhead tr td:eq(4)').hide();
+	        $('.tbhead tr td:eq(6)').hide();
 
-                    for (var i = 1; i <= $('#szulib div .tb tbody tr').length ; i++) {
-                        $('.tb tbody tr td').eq(7 * i - 5).hide();
-                        $('.tb tbody tr td').eq(7 * i - 4).hide();
-                        $('.tb tbody tr td').eq(7 * i - 3).hide();
-                        $('.tb tbody tr td').eq(7 * i - 1).hide();
-                    }
+	        for (var i = 1; i <= $('#szulib div .tb tbody tr').length ; i++) {
+	            $('.tb tbody tr td').eq(7 * i - 5).hide();
+	            $('.tb tbody tr td').eq(7 * i - 4).hide();
+	            $('.tb tbody tr td').eq(7 * i - 3).hide();
+	            $('.tb tbody tr td').eq(7 * i - 1).hide();
+	        }
 
-                    $('#szulib tbody').find('a').contents().unwrap();
-                 //   $(this).text($(this).text());
-                }
-            });
-        }
-        })
-        .fail(function() {
-            $('#szulib').append("连接图书馆出错！");
-        });
+	        $('#szulib tbody').find('a').contents().unwrap();
+		})
+		.fail(function () {
+		    $('#szulib').append('获取信息失败!');
+		});
 }
 
 function init () {
@@ -78,7 +82,7 @@ function init () {
     //首先快速载入问题（无需连接到图书馆）
     $('#szulib').append('<h2>深大图书馆有没有?</h2><div class="bs" id="isex"></div>');
     //获取isbn，text()获取html的文本， split分割
-    var isbn = $('#info').text().split('ISBN: ')[1].trim();
+    var isbn = $('#info').text().split('ISBN: ')[1];
     getInfo(isbn);
 }
 
