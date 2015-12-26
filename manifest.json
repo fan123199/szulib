@@ -2,7 +2,7 @@
    "manifest_version": 2,
    "name": "\u6DF1\u5927\u56FE\u4E66\u9986\u8C46\u74E3\u63D2\u4EF6",
    "short_name": "\u6DF1\u56FE\u8C46\u8BFB",
-   "version": "1.2",
+   "version": "1.0", /*发布时修改*/
    "description": "\u67E5\u770B\u8C46\u74E3\u4E0A\u56FE\u4E66\u5728\u6DF1\u5927\u56FE\u4E66\u9986\u501F\u9605\u60C5\u51B5",
    
    "browser_action": {
@@ -10,7 +10,7 @@
       "default_title": "\u4F7F\u7528\u4E2D"
    },      
    "content_scripts": [ {
-      "js": [ "jquery.js", "inject.js" ],
+      "js": [ "jquery-2.1.4.min.js", "inject.js" ],
       "matches": [ "http://book.douban.com/subject/*" ],
       "run_at": "document_end"
    } ],
