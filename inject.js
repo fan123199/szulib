@@ -1,12 +1,12 @@
 //将isbn13转化为isbn10
 function conv13to10(str) {
-    var s;
-    var c;
-    var checkDigit = 0;
-    var result = "";
+    let s;
+    let c;
+    let checkDigit = 0;
+    let result = "";
 
     s = str.substring(3, str.length);
-    for (i = 10; i > 1; i--) {
+    for (let i = 10; i > 1; i--) {
         c = s.charAt(10 - i);
         checkDigit += (c - 0) * i;
         result += c;
@@ -20,11 +20,12 @@ function conv13to10(str) {
 
 //获取图书信息
 function getInfo(isbn_info) {
-    let preUrl = "http://opac.lib.szu.edu.cn/opac/searchresult.aspx?isbn_f=" + isbn_info;
+    let preUrl = "http://opac.lib.szu.edu.cn/opac/searchresult.aspx";
 
     $.ajax({
         url: preUrl,
-        cache: false
+        cache: false,
+        data: {"isbn_f" : isbn_info }
     })
         .done(function (msg) {
             if (msg.indexOf("searchnotfound") !== -1) {
@@ -67,7 +68,7 @@ function showInfo(url) {
             $(".tbhead tr td:eq(4)").hide();
             $(".tbhead tr td:eq(6)").hide();
 
-            const tttt = $(".tb tbody tr td")
+            const tttt = $(".tb tbody tr td");
 
             for (let i = 1; i <= $("#szulib div .tb tbody tr").length; i++) {
                 tttt.eq(7 * i - 5).hide();
